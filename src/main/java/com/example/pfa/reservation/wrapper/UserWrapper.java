@@ -1,6 +1,5 @@
 package com.example.pfa.reservation.wrapper;
 
-import jakarta.persistence.Column;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;

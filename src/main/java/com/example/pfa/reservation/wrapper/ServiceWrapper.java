@@ -1,5 +1,6 @@
 package com.example.pfa.reservation.wrapper;
 
+import com.example.pfa.reservation.model.Service;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +18,7 @@ public class ServiceWrapper {
     private Double prix;
     private Long hotelId;
 
-    public static ServiceWrapper fromEntity(com.example.pfa.reservation.model.service entity) {
+    public static ServiceWrapper fromEntity(Service entity) {
         return ServiceWrapper.builder()
                 .id(entity.getId())
                 .nom(entity.getNom())
