@@ -1,52 +1,59 @@
 package com.example.pfa.reservation;
 
+
 import com.example.pfa.reservation.jwt.JwtUtil;
-import io.jsonwebtoken.MalformedJwtException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-
 import java.util.Collections;
+import static org.junit.jupiter.api.Assertions.*;
 
 class JwtUtilTest {
 
     private JwtUtil jwtUtil;
+    private final String secret = "0123456789ABCDEFGHIJKLMNOPQRSTUVWX"; // 32+ chars
 
     @BeforeEach
-    void setup() {
-        // une clé de 32+ caractères
-        jwtUtil = new JwtUtil("01234567890123456789012345678901");
+    void setUp() {
+        jwtUtil = new JwtUtil(secret);
     }
 
     @Test
-    void testGenerateAndValidateToken() {
-        String token = jwtUtil.generateToken("karima", "HOTEL_ADMIN");
+    void generateAndExtractUsername_andValidateToken_success() {
+        String username = "user1";
+        String role = "CLIENT";
 
-        UserDetails userDetails = new User(
-                "karima",
-                "password",
-                Collections.emptyList()
-        );
+        String token = jwtUtil.generateToken(username, role);
+        assertNotNull(token);
 
-        Assertions.assertEquals("karima", jwtUtil.extractUsername(token));
-        Assertions.assertTrue(jwtUtil.validateToken(token, userDetails));
+        String extracted = jwtUtil.extractUsername(token);
+        assertEquals(username, extracted);
+
+        UserDetails ud = User.withUsername(username).password("pwd").authorities(Collections.emptyList()).build();
+        assertTrue(jwtUtil.validateToken(token, ud));
     }
 
     @Test
-    void testExtractRole() {
-        String token = jwtUtil.generateToken("karima", "CLIENT");
+    void validateToken_wrongUsername_returnsFalse() {
+        String token = jwtUtil.generateToken("userA", "CLIENT");
+        UserDetails ud = User.withUsername("otherUser").password("pwd").authorities(Collections.emptyList()).build();
 
-        String role = jwtUtil.extractAllClaims(token).get("role", String.class);
-
-        Assertions.assertEquals("CLIENT", role);
+        assertFalse(jwtUtil.validateToken(token, ud));
     }
 
     @Test
-    void testInvalidTokenThrowsException() {
-        Assertions.assertThrows(Exception.class, () -> {
-            jwtUtil.extractAllClaims("invalid.token.here");
-        });
+    void extractAllClaims_invalidToken_throwsRuntimeException() {
+        String invalid = "this.is.not.a.token";
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> jwtUtil.extractAllClaims(invalid));
+        assertTrue(ex.getMessage().toLowerCase().contains("impossible d'extraire"));
+    }
+
+    @Test
+    void constructor_shortSecret_throwsIllegalArgumentException() {
+        String shortSecret = "short";
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new JwtUtil(shortSecret));
+        assertTrue(e.getMessage().contains("32"));
     }
 }
+

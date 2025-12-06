@@ -19,6 +19,9 @@
 
     <properties>
         <java.version>17</java.version>
+        <mockito.version>5.14.2</mockito.version>
+        <bytebuddy.version>1.15.11</bytebuddy.version>
+
     </properties>
 
     <dependencies>
@@ -133,6 +136,18 @@
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M5</version>
+                <configuration>
+                    <argLine>
+                        -javaagent:"${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar"
+                        -javaagent:"${settings.localRepository}/net/bytebuddy/byte-buddy-agent/${bytebuddy.version}/byte-buddy-agent-${bytebuddy.version}.jar"
+                    </argLine>
                 </configuration>
             </plugin>
 

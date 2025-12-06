@@ -1,7 +1,8 @@
 package com.example.pfa.reservation.jwt;
 
 import com.example.pfa.reservation.model.Role;
-import io.jsonwebtoken.Claims;
+import com.example.pfa.reservation.model.User;
+import com.example.pfa.reservation.repository.UserDAO;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,15 +21,17 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final CustomerUsersDetailsService service;
+    private final UserDAO userDao;
 
-    public JwtFilter(JwtUtil jwtUtil, CustomerUsersDetailsService service) {
+    public JwtFilter(JwtUtil jwtUtil, CustomerUsersDetailsService service, UserDAO userDao) {
         this.jwtUtil = jwtUtil;
         this.service = service;
+        this.userDao = userDao;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    public void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+                                 FilterChain filterChain) throws ServletException, IOException {
 
         if (request.getServletPath().matches("^(/user/login|/user/forgotPassword|/user/signup)$")) {
             filterChain.doFilter(request, response);
@@ -38,23 +41,26 @@ public class JwtFilter extends OncePerRequestFilter {
         String authorizationHeader = request.getHeader("Authorization");
         String userName = null;
         String token = null;
-        Claims claims = null;
-        String role = null;
 
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            token = authorizationHeader.substring(7);
+        try {
+            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+                token = authorizationHeader.substring(7).trim(); // Ajout de trim() pour enlever les espaces
 
-            // Extraire username et claims UNIQUEMENT après avoir obtenu le token
-            userName = jwtUtil.extractUsername(token);
-            claims = jwtUtil.extractAllClaims(token);
-
-            // Récupérer le rôle depuis le token
-            role = claims.get("role", String.class);
+                // Vérifier que le token n'est pas vide après trim()
+                if (!token.isEmpty()) {
+                    userName = jwtUtil.extractUsername(token);
+                }
+            }
+        } catch (Exception e) {
+            // Token invalide ou expiré - continuer sans authentification
+            logger.warn("JWT token validation failed", e);
         }
 
         if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = service.loadUserByUsername(userName);
-            if (jwtUtil.validateToken(token, userDetails)) {
+
+            // IMPORTANT: Vérifier que userDetails n'est pas null avant d'appeler validateToken
+            if (userDetails != null && jwtUtil.validateToken(token, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -64,6 +70,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
+
+
 
     public boolean isHotelAdmin() {
         String role = getCurrentUserRole();
@@ -94,5 +102,22 @@ public class JwtFilter extends OncePerRequestFilter {
         return null;
     }
 
+    public String getCurrentUsername() {
+        if (SecurityContextHolder.getContext().getAuthentication() != null &&
+                SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof UserDetails userDetails) {
+            return userDetails.getUsername();
+        }
+        return null;
+    }
 
+
+    public Long getCurrentUserId() {
+        String username = getCurrentUsername();
+        if (username != null) {
+
+            User user = userDao.findByEmailOrUsername(username, username);
+            return user != null ? user.getId() : null;
+        }
+        return null;
+    }
 }

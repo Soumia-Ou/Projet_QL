@@ -276,7 +276,7 @@ public class HotelServiceImp implements HotelService {
     }
 
     // Validation des champs obligatoires
-    private boolean validateHotelMap(Map<String, String> requestMap) {
+    public boolean validateHotelMap(Map<String, String> requestMap) {
         return requestMap.containsKey(NOM) &&
                 requestMap.containsKey(ADRESSE) &&
                 requestMap.containsKey(TELEPHONE) &&
@@ -287,7 +287,7 @@ public class HotelServiceImp implements HotelService {
     }
 
     // Extraction et validation du nombre d'étoiles
-    private int extractAndValidateStars(Map<String, String> requestMap) {
+    public int extractAndValidateStars(Map<String, String> requestMap) {
         try {
             int etoiles = Integer.parseInt(requestMap.get(NOMBRE_ETOILES));
             if (etoiles < 1 || etoiles > 5) {
