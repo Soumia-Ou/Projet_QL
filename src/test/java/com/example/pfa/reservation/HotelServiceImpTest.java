@@ -72,10 +72,7 @@ class HotelServiceImpTest {
         validRequestMap.put("id", "1");
     }
 
-    // =================================================
-    // TESTS POUR addHotel()
-    // =================================================
-
+    // ========================TESTS POUR addHotel()=========================
     @Test
     void addHotel_withGlobalAdminAccessAndValidData_shouldAddHotel() {
         // Test: Vérifier qu'un administrateur global peut ajouter un hôtel avec des données valides
@@ -251,10 +248,7 @@ class HotelServiceImpTest {
         verify(hotelDao, never()).save(any(Hotel.class));
     }
 
-    // =================================================
-    // TESTS POUR deleteHotel()
-    // =================================================
-
+    // ======================TESTS POUR deleteHotel()===========================
     @Test
     void deleteHotel_withGlobalAdminAccessAndValidId_shouldDeleteHotel() {
         // Test: Vérifier la suppression d'un hôtel existant
@@ -291,10 +285,7 @@ class HotelServiceImpTest {
         verify(hotelDao, never()).deleteById(anyLong());
     }
 
-    // =================================================
-    // TESTS POUR getAllHotels()
-    // =================================================
-
+    // ======================TESTS POUR getAllHotels()===========================
     @Test
     void getAllHotels_withGlobalAdminAccess_shouldReturnHotels() {
         // Test: Vérifier qu'un admin global peut récupérer tous les hôtels

@@ -8,13 +8,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.userdetails.UserDetails;
-
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.SignatureException;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-
 @Service
 public class JwtUtil {
 
@@ -22,7 +22,6 @@ public class JwtUtil {
 
     private final Key secretKey;
 
-    // Injection de la clé via application.properties ou variable d'environnement
     public JwtUtil(@Value("${jwt.secret}") String secret) {
         if (secret == null || secret.length() < 32) {
             throw new IllegalArgumentException("La clé JWT doit contenir au moins 32 caractères");
@@ -39,8 +38,7 @@ public class JwtUtil {
     }
 
     public <T> T extractClaims(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
+        return claimsResolver.apply(extractAllClaims(token));
     }
 
     public Claims extractAllClaims(String token) {
@@ -51,15 +49,29 @@ public class JwtUtil {
                     .parseClaimsJws(token)
                     .getBody();
 
-        } catch (Exception e) {
-            log.error("Erreur lors de l'extraction des claims JWT. Token invalide ou expiré. Token = {}", token, e);
+        } catch (ExpiredJwtException e) {
+            log.warn("JWT expiré");
+            throw new JwtTokenException("Le token JWT est expiré", e);
 
-            // 💡 Rejeter avec une exception plus descriptive
-            throw new RuntimeException("Impossible d'extraire les claims du JWT : " + e.getMessage(), e);
+        } catch (MalformedJwtException e) {
+            log.error("JWT mal formé");
+            throw new JwtTokenException("Le token JWT est mal formé", e);
+
+        } catch (SignatureException e) {
+            log.error("Signature JWT invalide");
+            throw new JwtTokenException("Signature JWT invalide", e);
+
+        } catch (UnsupportedJwtException e) {
+            log.error("JWT non supporté");
+            throw new JwtTokenException("JWT non supporté", e);
+
+        } catch (IllegalArgumentException e) {
+            log.error("JWT vide ou invalide");
+            throw new JwtTokenException("JWT vide ou invalide", e);
         }
     }
 
-    private Boolean isTokenExpired(String token) {
+    private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
@@ -73,14 +85,14 @@ public class JwtUtil {
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(subject)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 heures
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
                 .signWith(secretKey)
                 .compact();
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+        return extractUsername(token).equals(userDetails.getUsername())
+                && !isTokenExpired(token);
     }
 }

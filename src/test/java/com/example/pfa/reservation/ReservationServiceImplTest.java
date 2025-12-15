@@ -111,7 +111,6 @@ class ReservationServiceImplTest {
 
     @Test
     void testAddReservation_Success_AsClient() {
-        // Arrange
         when(jwtFilter.isClient()).thenReturn(true);
         when(jwtFilter.getCurrentUserRole()).thenReturn("CLIENT");
         when(userDao.findByEmailOrUsername("CLIENT", "CLIENT")).thenReturn(clientUser);
@@ -120,10 +119,8 @@ class ReservationServiceImplTest {
         when(serviceDao.findById(1L)).thenReturn(Optional.of(testService));
         when(reservationDao.save(any(Reservation.class))).thenReturn(testReservation);
 
-        // Act
         ResponseEntity<String> response = reservationService.addReservation(validRequestMap);
 
-        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.getBody().contains("successfully"));
         verify(reservationDao, times(1)).save(any(Reservation.class));
@@ -131,13 +128,10 @@ class ReservationServiceImplTest {
 
     @Test
     void testAddReservation_Unauthorized_NotClient() {
-        // Arrange
         when(jwtFilter.isClient()).thenReturn(false);
 
-        // Act
         ResponseEntity<String> response = reservationService.addReservation(validRequestMap);
 
-        // Assert
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         verify(reservationDao, never()).save(any());
     }
@@ -145,18 +139,14 @@ class ReservationServiceImplTest {
 
 
     // ==================== TESTS POUR deleteReservation ====================
-
     @Test
     void testDeleteReservation_Success_AsClientOwner() {
-        // Arrange
         when(reservationDao.findById(1L)).thenReturn(Optional.of(testReservation));
         when(jwtFilter.getCurrentUserRole()).thenReturn("CLIENT");
         when(userDao.findByEmailOrUsername("CLIENT", "CLIENT")).thenReturn(clientUser);
 
-        // Act
         ResponseEntity<String> response = reservationService.deleteReservation(1L);
 
-        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.getBody().contains("successfully"));
         verify(reservationDao, times(1)).deleteById(1L);
@@ -164,16 +154,13 @@ class ReservationServiceImplTest {
 
     @Test
     void testDeleteReservation_Success_AsHotelAdmin() {
-        // Arrange
         User hotelAdmin = testHotel.getAdminHotelier();
         when(reservationDao.findById(1L)).thenReturn(Optional.of(testReservation));
         when(jwtFilter.getCurrentUserRole()).thenReturn("HOTEL_ADMIN");
         when(userDao.findByEmailOrUsername("HOTEL_ADMIN", "HOTEL_ADMIN")).thenReturn(hotelAdmin);
 
-        // Act
         ResponseEntity<String> response = reservationService.deleteReservation(1L);
 
-        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(reservationDao, times(1)).deleteById(1L);
     }
@@ -215,33 +202,25 @@ class ReservationServiceImplTest {
 
     @Test
     void testConfirmerReservation_Success_AsHotelAdmin() {
-        // Arrange
         User hotelAdmin = testHotel.getAdminHotelier();
         when(reservationDao.findById(1L)).thenReturn(Optional.of(testReservation));
         when(jwtFilter.getCurrentUserRole()).thenReturn("HOTEL_ADMIN");
         when(userDao.findByEmailOrUsername("HOTEL_ADMIN", "HOTEL_ADMIN")).thenReturn(hotelAdmin);
         when(reservationDao.save(any(Reservation.class))).thenReturn(testReservation);
-
-        // Act
         ResponseEntity<String> response = reservationService.confirmerReservation(1L);
 
-        // Assert
-        // Note: Votre code semble permettre aux admins de confirmer sans restriction
         assertTrue(response.getStatusCode().is2xxSuccessful());
     }
 
     @Test
     void testConfirmerReservation_Success_AsClientOwner() {
-        // Arrange
         when(reservationDao.findById(1L)).thenReturn(Optional.of(testReservation));
         when(jwtFilter.getCurrentUserRole()).thenReturn("CLIENT");
         when(userDao.findByEmailOrUsername("CLIENT", "CLIENT")).thenReturn(clientUser);
         when(reservationDao.save(any(Reservation.class))).thenReturn(testReservation);
 
-        // Act
         ResponseEntity<String> response = reservationService.confirmerReservation(1L);
 
-        // Assert
         // Selon votre logique, le client peut confirmer sa propre réservation
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
@@ -267,32 +246,25 @@ class ReservationServiceImplTest {
 
     @Test
     void testAnnulerReservation_Success_AsClientOwner() {
-        // Arrange
         when(reservationDao.findById(1L)).thenReturn(Optional.of(testReservation));
         when(jwtFilter.getCurrentUserRole()).thenReturn("CLIENT");
         when(userDao.findByEmailOrUsername("CLIENT", "CLIENT")).thenReturn(clientUser);
         when(reservationDao.save(any(Reservation.class))).thenReturn(testReservation);
 
-        // Act
         ResponseEntity<String> response = reservationService.annulerReservation(1L);
 
-        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
     void testAnnulerReservation_Success_AsHotelAdmin() {
-        // Arrange
         User hotelAdmin = testHotel.getAdminHotelier();
         when(reservationDao.findById(1L)).thenReturn(Optional.of(testReservation));
         when(jwtFilter.getCurrentUserRole()).thenReturn("HOTEL_ADMIN");
         when(userDao.findByEmailOrUsername("HOTEL_ADMIN", "HOTEL_ADMIN")).thenReturn(hotelAdmin);
         when(reservationDao.save(any(Reservation.class))).thenReturn(testReservation);
-
-        // Act
         ResponseEntity<String> response = reservationService.annulerReservation(1L);
 
-        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
@@ -316,39 +288,27 @@ class ReservationServiceImplTest {
     }
 
     // ==================== TESTS POUR getReservationsByHotelId ====================
-
     @Test
     void testGetReservationsByHotelId_Success() {
-        // Arrange
         // Note: Votre implémentation actuelle n'a pas de vérification de rôle pour cette méthode
         List<Reservation> reservations = Arrays.asList(testReservation);
         when(reservationDao.findReservationsByHotelId(1L)).thenReturn(reservations);
-
-        // Act
         ResponseEntity<List<ReservationWrapper>> response =
                 reservationService.getReservationsByHotelId(1L);
 
-        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(1, response.getBody().size());
     }
-
     // ==================== TESTS POUR getReservationsByClientId ====================
-
     @Test
     void testGetReservationsByClientId_Success() {
-        // Arrange
         List<ReservationWrapper> wrappers = Arrays.asList(
                 new ReservationWrapper(testReservation)
         );
         when(reservationDao.findReservationsByClientId(1L)).thenReturn(wrappers);
-
-        // Act
         ResponseEntity<List<ReservationWrapper>> response =
                 reservationService.getReservationsByClientId(1L);
-
-        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(1, response.getBody().size());
@@ -358,29 +318,22 @@ class ReservationServiceImplTest {
 
     @Test
     void testCalculerPrixTotalReservation_Success() {
-        // Arrange
         when(reservationDao.findById(1L)).thenReturn(Optional.of(testReservation));
 
-        // Act
         ResponseEntity<Double> response = reservationService.calculerPrixTotalReservation(1L);
 
-        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        // Note: Votre méthode calculerPrixTotalReservation ne calcule pas les services
         // Elle retourne seulement le prix de la chambre (150.0)
         assertEquals(150.0, response.getBody(), 0.001);
     }
-
     @Test
     void testCalculerPrixTotalReservation_NotFound() {
-        // Arrange
+
         when(reservationDao.findById(1L)).thenReturn(Optional.empty());
 
-        // Act
         ResponseEntity<Double> response = reservationService.calculerPrixTotalReservation(1L);
 
-        // Assert
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 

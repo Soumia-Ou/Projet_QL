@@ -63,9 +63,7 @@ class JwtFilterTest {
 
         when(req.getServletPath()).thenReturn("/some/path");
         when(req.getHeader("Authorization")).thenReturn(null);
-
         jwtFilter.doFilterInternal(req, res, chain);
-
         verify(chain, times(1)).doFilter(req, res);
         verifyNoInteractions(service);
         verifyNoInteractions(jwtUtil);
@@ -80,8 +78,6 @@ class JwtFilterTest {
 
         when(req.getServletPath()).thenReturn("/protected");
         when(req.getHeader("Authorization")).thenReturn("Bearer bad.token.here");
-
-        // Simuler une exception lors de l'extraction du nom d'utilisateur
         when(jwtUtil.extractUsername("bad.token.here"))
                 .thenThrow(new RuntimeException("invalid token"));
 

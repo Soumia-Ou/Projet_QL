@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -37,28 +36,61 @@ public class ReservationWrapper {
     private List<ServiceWrapper> services;
 
     public ReservationWrapper(Reservation reservation) {
+        if (reservation != null) {
+            this.id = reservation.getId();
+            this.dateDebut = reservation.getDateDebut();
+            this.dateFin = reservation.getDateFin();
+            this.dateReservation = reservation.getDateReservation();
+            this.statut = reservation.getStatut();
+            this.montantTotal = reservation.getMontantTotal();
+            if (reservation.getClient() != null) {
+                this.clientId = reservation.getClient().getId();
+                this.clientNom = reservation.getClient().getNom();
+            }
+            if (reservation.getChambre() != null) {
+                this.chambreId = reservation.getChambre().getId();
+                this.chambreNumero = reservation.getChambre().getNumero();
+            }
+            if (reservation.getHotel() != null) {
+                this.hotelId = reservation.getHotel().getId();
+                this.hotelNom = reservation.getHotel().getNom();
+            }
+            this.services = reservation.getServices() != null ?
+                    reservation.getServices().stream()
+                            .map(ServiceWrapper::fromEntity)
+                            .toList() : null; // Remplace collect(Collectors.toList())
+        }
     }
 
     public static ReservationWrapper fromEntity(Reservation entity) {
-        if (entity == null) return null;
-
-        return ReservationWrapper.builder()
-                .id(entity.getId())
-                .dateDebut(entity.getDateDebut())
-                .dateFin(entity.getDateFin())
-                .dateReservation(entity.getDateReservation())
-                .statut(entity.getStatut()) // ou entity.getStatut().name() si tu veux un String
-                .montantTotal(entity.getMontantTotal())
-                .clientId(entity.getClient() != null ? entity.getClient().getId() : null)
-                .clientNom(entity.getClient() != null ? entity.getClient().getNom() : null)
-                .chambreId(entity.getChambre() != null ? entity.getChambre().getId() : null)
-                .chambreNumero(entity.getChambre() != null ? entity.getChambre().getNumero() : null)
-                .hotelId(entity.getHotel() != null ? entity.getHotel().getId() : null)
-                .hotelNom(entity.getHotel() != null ? entity.getHotel().getNom() : null)
-                .services(entity.getServices() != null ?
-                        entity.getServices().stream()
-                                .map(ServiceWrapper::fromEntity)
-                                .collect(Collectors.toList()) : null)
-                .build();
+        return new ReservationWrapper(entity);
     }
+
+
+    public ReservationWrapper(Long id,
+                              String clientNom,
+                              String hotelNom,
+                              LocalDate dateDebut,
+                              LocalDate dateFin,
+                              ReservationStatus statut,
+                              Double montantTotal,
+                              Long clientId,
+                              Long chambreId,
+                              String chambreNumero,
+                              Long hotelId) {
+        this.id = id;
+        this.clientNom = clientNom;
+        this.hotelNom = hotelNom;
+        this.dateDebut = dateDebut;
+        this.dateFin = dateFin;
+        this.statut = statut;
+        this.montantTotal = montantTotal;
+        this.clientId = clientId;
+        this.chambreId = chambreId;
+        this.chambreNumero = chambreNumero;
+        this.hotelId = hotelId;
+    }
+
+
+
 }

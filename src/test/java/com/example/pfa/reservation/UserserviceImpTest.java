@@ -162,7 +162,6 @@ class UserserviceImpTest {
     }
 
     // ==================== TESTS POUR LA MÉTHODE login() ====================
-
     @Test
     void login_ShouldReturnToken_WhenValidCredentialsWithEmail() {
         // Test : Vérifier qu'une connexion réussit avec un email valide
@@ -175,7 +174,6 @@ class UserserviceImpTest {
                 .password("encodedPassword")
                 .authorities(new SimpleGrantedAuthority("ROLE_CLIENT"))
                 .build();
-
         when(customerUsersDetailsService.loadUserByUsername("john.doe@example.com")).thenReturn(userDetails);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(authentication);

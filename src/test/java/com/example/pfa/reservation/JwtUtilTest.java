@@ -33,7 +33,6 @@ class JwtUtilTest {
         UserDetails ud = User.withUsername(username).password("pwd").authorities(Collections.emptyList()).build();
         assertTrue(jwtUtil.validateToken(token, ud));
     }
-
     @Test
     void validateToken_wrongUsername_returnsFalse() {
         String token = jwtUtil.generateToken("userA", "CLIENT");
@@ -41,7 +40,6 @@ class JwtUtilTest {
 
         assertFalse(jwtUtil.validateToken(token, ud));
     }
-
     @Test
     void extractAllClaims_invalidToken_throwsRuntimeException() {
         String invalid = "this.is.not.a.token";

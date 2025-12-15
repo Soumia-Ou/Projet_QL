@@ -22,7 +22,11 @@
         <mockito.version>5.14.2</mockito.version>
         <bytebuddy.version>1.15.11</bytebuddy.version>
 
-    </properties>
+     </properties>
+
+
+
+
 
     <dependencies>
 
@@ -125,6 +129,8 @@
                 </configuration>
             </plugin>
 
+
+
             <!-- Spring Boot Plugin -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -140,15 +146,42 @@
             </plugin>
 
             <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>3.11.0.3922</version>
+            </plugin>
+
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M5</version>
                 <configuration>
                     <argLine>
-                        -javaagent:"${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar"
-                        -javaagent:"${settings.localRepository}/net/bytebuddy/byte-buddy-agent/${bytebuddy.version}/byte-buddy-agent-${bytebuddy.version}.jar"
+                        -javaagent:"${settings.localRepository}/org/jacoco/org.jacoco.agent/0.8.10/org.jacoco.agent-0.8.10-runtime.jar=destfile=${project.build.directory}/jacoco.exec"
                     </argLine>
                 </configuration>
+            </plugin>
+
+
+
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.10</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
         </plugins>

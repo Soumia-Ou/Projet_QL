@@ -105,16 +105,13 @@ class ServiceServiceImpTest {
 
     @Test
     void testAddService_Success_AsHotelAdmin() {
-        // Arrange
         when(jwtFilter.isHotelAdmin()).thenReturn(true);
         when(jwtFilter.getCurrentUserRole()).thenReturn("admin@hotel.com");
         when(hotelDao.findById(1L)).thenReturn(Optional.of(testHotel));
         when(serviceDao.save(any(Service.class))).thenReturn(testService);
 
-        // Act
         ResponseEntity<String> response = serviceService.addService(validRequestMap);
 
-        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertResponseMessage(response, "Service added successfully");
         verify(serviceDao, times(1)).save(any(Service.class));
@@ -122,13 +119,10 @@ class ServiceServiceImpTest {
 
     @Test
     void testAddService_Unauthorized_NotHotelAdmin() {
-        // Arrange
         when(jwtFilter.isHotelAdmin()).thenReturn(false);
 
-        // Act
         ResponseEntity<String> response = serviceService.addService(validRequestMap);
 
-        // Assert
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertResponseMessage(response, ReservationConstants.UNAUTHORIZED_ACCESS);
         verify(serviceDao, never()).save(any());
@@ -291,28 +285,22 @@ class ServiceServiceImpTest {
 
     @Test
     void testDeleteService_NotFound_ServiceDoesNotExist() {
-        // Arrange
         when(jwtFilter.isHotelAdmin()).thenReturn(true);
         when(serviceDao.findById(anyLong())).thenReturn(Optional.empty());
 
-        // Act
         ResponseEntity<String> response = serviceService.deleteService(999L);
 
-        // Assert
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertResponseMessage(response, "Service not found");
         verify(serviceDao, never()).deleteById(anyLong());
     }
-
     @Test
     void testDeleteService_Unauthorized_NotHotelAdmin() {
-        // Arrange
+
         when(jwtFilter.isHotelAdmin()).thenReturn(false);
 
-        // Act
         ResponseEntity<String> response = serviceService.deleteService(1L);
 
-        // Assert
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertResponseMessage(response, ReservationConstants.UNAUTHORIZED_ACCESS);
         verify(serviceDao, never()).deleteById(anyLong());
@@ -396,33 +384,26 @@ class ServiceServiceImpTest {
 
     @Test
     void testGetServiceById_Unauthorized_WrongHotelAdmin() {
-        // Arrange
         when(jwtFilter.isHotelAdmin()).thenReturn(true);
         when(jwtFilter.getCurrentUserRole()).thenReturn("other@hotel.com");
         when(serviceDao.getServiceById(1L)).thenReturn(Optional.of(testServiceWrapper));
         when(hotelDao.findById(1L)).thenReturn(Optional.of(testHotel));
 
-        // Act
         ResponseEntity<ServiceWrapper> response = serviceService.getServiceById(1L);
 
-        // Assert
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertNull(response.getBody());
     }
-
     @Test
     void testGetServicesByHotelId_Success_AsHotelAdmin() {
-        // Arrange
         when(jwtFilter.isHotelAdmin()).thenReturn(true);
         when(jwtFilter.getCurrentUserRole()).thenReturn("admin@hotel.com");
         when(hotelDao.findById(1L)).thenReturn(Optional.of(testHotel));
         List<ServiceWrapper> serviceList = Arrays.asList(testServiceWrapper);
         when(serviceDao.getServicesByHotelId(1L)).thenReturn(serviceList);
 
-        // Act
         ResponseEntity<List<ServiceWrapper>> response = serviceService.getServicesByHotelId(1L);
 
-        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(1, response.getBody().size());

@@ -15,14 +15,14 @@ import java.util.List;
 @Repository
 public interface ReservationDAO extends JpaRepository<Reservation, Long> {
 
-    @Query("SELECT new com.example.pfa.reservation.wrapper.ReservationWrapper(" +
-            "r.id, r.dateDebut, r.dateFin, r.dateReservation, " +
-            "r.statut, r.montantTotal, " +
-            "r.client.id, r.client.nom, " +
-            "r.chambre.id, r.chambre.numero, " +
-            "r.hotel.id, r.hotel.nom" +
-            ") FROM Reservation r WHERE r.client.id = :clientId")
+    @Query("SELECT r.id AS id, r.dateDebut AS dateDebut, r.dateFin AS dateFin, r.dateReservation AS dateReservation, " +
+            "r.statut AS statut, r.montantTotal AS montantTotal, " +
+            "r.client.id AS clientId, r.client.nom AS clientNom, " +
+            "r.chambre.id AS chambreId, r.chambre.numero AS chambreNumero, " +
+            "r.hotel.id AS hotelId, r.hotel.nom AS hotelNom " +
+            "FROM Reservation r WHERE r.client.id = :clientId")
     List<ReservationWrapper> findReservationsByClientId(@Param("clientId") Long clientId);
+
 
     @Transactional
     @Modifying

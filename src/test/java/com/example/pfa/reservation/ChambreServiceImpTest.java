@@ -73,10 +73,7 @@ class ChambreServiceImpTest {
         validRequestMap.put("id", "1");
     }
 
-    // =================================================
-    // TESTS POUR addChambre() - CORRIGÉS
-    // =================================================
-
+    // =====================TESTS POUR addChambre() ==========================
     @Test
     void addChambre_withHotelAdminAccessAndValidData_shouldAddChambre() {
         when(jwtFilter.isHotelAdmin()).thenReturn(true);
@@ -91,7 +88,6 @@ class ChambreServiceImpTest {
         assertTrue(response.getBody().contains("successfully"));
         verify(chambreDao, times(1)).save(any(Chambre.class));
     }
-
     @Test
     void addChambre_withoutAdminAccess_shouldReturnUnauthorized() {
         when(jwtFilter.isHotelAdmin()).thenReturn(false);
@@ -143,10 +139,7 @@ class ChambreServiceImpTest {
         verify(chambreDao, never()).save(any(Chambre.class));
     }
 
-    // =================================================
-    // TESTS POUR updateChambre() - CORRIGÉS
-    // =================================================
-
+    // =====================TESTS POUR updateChambre()===========================
     @Test
     void updateChambre_withValidDataAndHotelAdmin_shouldUpdateChambre() {
         when(jwtFilter.isHotelAdmin()).thenReturn(true);
@@ -157,12 +150,10 @@ class ChambreServiceImpTest {
         when(chambreDao.save(any(Chambre.class))).thenReturn(testChambre);
 
         ResponseEntity<String> response = chambreService.updateChambre(validRequestMap);
-
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.getBody().contains("successfully"));
         verify(chambreDao, times(1)).save(any(Chambre.class));
     }
-
     @Test
     void updateChambre_withoutRoomId_shouldReturnBadRequest() {
         Map<String, String> requestWithoutId = new HashMap<>(validRequestMap);
